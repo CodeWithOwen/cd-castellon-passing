@@ -1,23 +1,17 @@
 import './App.css';
-import React from 'react';
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Testing deploy with type script!
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
 
+
+import React, { useEffect, useState } from 'react';
+
+const App: React.FC = () => {
+  const [count, setCount] = useState<number>(0);
+
+  useEffect(() => {
+    fetch('/json').then((res) => res.json()).then((data) => {
+      console.log("data", data)
+    })
+  }, []);
+
+  return <div>{count}</div>;
+};
 export default App;
