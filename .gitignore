@@ -4,7 +4,7 @@ node_modules/
 
 /client/build/
 /client/public/
-/server/data.json
+# /server/data.json
 *.log
 logs
 
