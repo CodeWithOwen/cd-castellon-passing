@@ -1,17 +1,14 @@
 import './App.css';
-
-
-import React, { useEffect, useState } from 'react';
-
+import Grid from '@mui/material/Grid';
+import { useEffect, useState } from 'react';
+import PassingVisualization from './PassingVisualization';
 const App: React.FC = () => {
-  const [count, setCount] = useState<number>(0);
-
-  useEffect(() => {
-    fetch('/json').then((res) => res.json()).then((data) => {
-      console.log("data", data)
-    })
-  }, []);
-
-  return <div>{count}</div>;
+  return (
+    <Grid container>
+      <Grid item xs={12}>
+        <PassingVisualization />
+      </Grid>
+    </Grid>
+  );
 };
 export default App;
