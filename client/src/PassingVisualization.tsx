@@ -23,21 +23,21 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
     activeReceiver: "0"
   })
   let horizontalLinePlugin: any;
+  const handleMatchChange = (event: React.ChangeEvent<{ name?: string; value: string }>) => {
+    setCurrentMatch(event.target.value);
+  }
 
   useEffect(() => {
     setState({
       ...state,
       isLoading: true
     })
-    fetch(`/passing-data/${currentMatch}`).then((res) => res.json()).then((data) => {
-      let arrayOfPlayers: Player[] = Object.keys(data.players).map(playerID => ({
-        id: playerID,
-        x: data.players[playerID].avg_x,
-        y: data.players[playerID].avg_y,
-        r: data.players[playerID].count,
-        name: data.players[playerID].player_name,
-        count: data.players[playerID].count
-      }));
+    fetch(`api/passing-data/${currentMatch}`).then((res) => res.json()).then((data) => {
+      console.log(data)
+      let arrayOfPlayers: Player[] = data.players.map((player: Player) => {
+        player.r = player.totalPasses
+        return player
+      })
       const maxRadius: number = Math.max(...arrayOfPlayers.map(player => player.r))
       arrayOfPlayers = arrayOfPlayers.map(player => {
         player.r = (player.r / maxRadius) * 10
@@ -67,12 +67,10 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
 
     horizontalLinePlugin = {
       id: 'horizontalLine',
-      afterDraw: (chart: any) => {
+      beforeDatasetsDraw: (chart: any) => {
         const ctx = chart.ctx;
         const yAxis = chart.scales.y;
         const xAxis = chart.scales.x;
-        const midX = xAxis.getPixelForValue((xAxis.max + xAxis.min) / 2);
-        // const midY = yAxis.getPixelForValue((yAxis.max + yAxis.min) / 2);
 
         const topX = xAxis.getPixelForValue(xAxis.max);
         const topY = yAxis.getPixelForValue(yAxis.max);
@@ -127,39 +125,50 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
         ctx.stroke();
 
 
-
+        const centerCircleRadius: number = 10
+        const centerCircleRadiusPercentage: number = centerCircleRadius / 120
+        const centerCircleRadiusPixels: number = centerCircleRadiusPercentage * horizontalPixelDistance
+        ctx.beginPath();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc((bottomX + topX) / 2, (bottomY + topY) / 2, centerCircleRadiusPixels, 0, 2 * Math.PI);
+        ctx.stroke();
         const passMap = state.passMap
         state.filteredPlayers.forEach((player, index) => {
           const currentPlayerId = player.id
           const matchingPasserKeys = Object.keys(passMap).filter(key => key.split("-")[0] === currentPlayerId)
-          matchingPasserKeys.forEach(passerKey => {
-            const passes = passMap[passerKey].passes
-            const numberOfPasses = passes.length
-            const passingPlayerObject = state.filteredPlayers.find(player => player.id === passerKey.split("-")[0])
-            const averageStartX = passingPlayerObject?.x || 0
-            const averageStartY = passingPlayerObject?.y || 0
+          matchingPasserKeys.forEach((passerKey, index) => {
+            if (index === 0 || true) {
+              const passes = passMap[passerKey].passes
+              const numberOfPasses = passes.length
+              const passingPlayerObject = state.filteredPlayers.find(player => player.id === passerKey.split("-")[0])
+              const averageStartX = passingPlayerObject?.x || 0
+              const averageStartY = passingPlayerObject?.y || 0
 
-            const receivingPlayerObject = state.filteredPlayers.find(player => player.id === passerKey.split("-")[1])
-            const averageEndX = receivingPlayerObject?.x || 0
-            const averageEndY = receivingPlayerObject?.y || 0
-            //draw a line for one pass
-            const xPercentageStart = averageStartX / 120
-            const xLocationStart = xPercentageStart * (topX - bottomX)
-            const yPercentageStart = averageStartY / 80
-            const yLocationStart = yPercentageStart * (topY - bottomY)
+              const receivingPlayerObject = state.filteredPlayers.find(player => player.id === passerKey.split("-")[1])
+              const averageEndX = receivingPlayerObject?.x || 0
+              const averageEndY = receivingPlayerObject?.y || 0
+              //draw a line for one pass
+              const xPercentageStart = averageStartX / 120
+              const xLocationStart = xPercentageStart * (topX - bottomX)
+              const yPercentageStart = averageStartY / 80
+              const yLocationStart = yPercentageStart * (topY - bottomY)
 
-            const xPercentageEnd = averageEndX / 120
-            const xLocationEnd = xPercentageEnd * (topX - bottomX)
-            const yPercentageEnd = averageEndY / 80
-            const yLocationEnd = yPercentageEnd * (topY - bottomY)
+              const xPercentageEnd = averageEndX / 120
+              const xLocationEnd = xPercentageEnd * (topX - bottomX)
+              const yPercentageEnd = averageEndY / 80
+              const yLocationEnd = yPercentageEnd * (topY - bottomY)
 
 
-            ctx.beginPath();
-            ctx.moveTo(xLocationStart + bottomX, yLocationStart + bottomY);
-            ctx.lineTo(xLocationEnd + bottomX, yLocationEnd + bottomY);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 1;
-            ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(xLocationStart + bottomX, yLocationStart + bottomY);
+              ctx.lineTo(xLocationEnd + bottomX, yLocationEnd + bottomY);
+              ctx.strokeStyle = '#000000';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+            }
 
           })
         })
@@ -169,14 +178,20 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
     };
 
     Chart.register(horizontalLinePlugin);
-
+    const minAverageValueAdded: number = Math.min(...state.arrayOfPlayers.map(player => player.averageValueAdded || 0))
+    const maxAverageValueAdded: number = Math.max(...state.arrayOfPlayers.map(player => player.averageValueAdded || 0))
     const chartData = {
       datasets: [{
         label: 'Player Locations',
         data: state.filteredPlayers,
-        backgroundColor: 'rgb(255, 99, 132)'
+        backgroundColor: state.filteredPlayers.map(player => {
+          return interpolateColor(player.averageValueAdded as number, minAverageValueAdded, maxAverageValueAdded, [26, 188, 156], [155, 89, 182])
+        }
+        )
       }]
     };
+
+
     const config: ChartConfiguration<'bubble', (number | BubbleDataPoint)[], number> = {
       type: 'bubble',
       data: chartData,
@@ -229,8 +244,7 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
     <Grid container spacing={2} alignItems="center" direction="column">
       <Grid item xs={12} container justifyContent="center">
         <Grid item xs={12} sm={6} md={4}>
-          <SelectMatch currentMatch={currentMatch} matches={matches} />
-
+          <SelectMatch currentMatch={currentMatch} matches={matches} handleChange={handleMatchChange} />
         </Grid>
       </Grid>
       <Grid item>
@@ -244,3 +258,19 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
 
 }
 export default PassingVisualization;
+
+
+
+function interpolateColor(value: number, min: number, max: number, color1: number[], color2: number[]) {
+  const [r1, g1, b1] = color1;
+  const [r2, g2, b2] = color2;
+
+  const ratio = (value - min) / (max - min);
+
+  const r = Math.round(r1 + (r2 - r1) * ratio);
+  const g = Math.round(g1 + (g2 - g1) * ratio);
+  const b = Math.round(b1 + (b2 - b1) * ratio);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+

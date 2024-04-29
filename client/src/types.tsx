@@ -4,9 +4,24 @@ export type Player = {
   y: number,
   r: number,
   name: string,
-  count: number
+  totalPasses: number,
+  averageValueAdded?: number
+}
+export type AlignType = 'left' | 'center' | 'right' | 'justify' | 'inherit';
+export type PassComboObject = {
+  count: number,
+  player: string,
+  recipient: string,
+}
+type GraphHeader = {
+  name: string,
+  label: string
 }
 
+export type GraphConfig = {
+  headers: GraphHeader[],
+  data: PassComboObject[] | Player[]
+}
 export type PassingVisualizationProps = {
   matches: Match[]
 }
@@ -18,7 +33,12 @@ export type PlayerSelectionsProps = {
 }
 export type SelectMatchProps = {
   matches: Match[],
-  currentMatch: string
+  currentMatch: string,
+  handleChange: (event: React.ChangeEvent<{ name?: string; value: string }>) => void
+}
+
+export type LeadersProps = {
+  matches: Match[],
 }
 export type PassingVisualizationState = {
   isLoading: boolean,

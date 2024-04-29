@@ -1,33 +1,34 @@
 import Grid from '@mui/material/Grid'
+import Typography from '@mui/material/Typography'
 import { Link } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles({
-  link: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    textDecoration: "none",
-    paddingTop: "2rem",
-    paddingBottom: "2rem",
-    border: "2px solid #444444",
-    borderRadius: 10,
-    fontSize: "3rem",
-    color: "#000000"
-  },
-  linkWrapper: {
-    marginTop: "4rem !important"
+const StyledLink = styled(Link)(({ theme }) => ({
+  width: "100%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  textDecoration: "none",
+  paddingTop: "1rem",
+  paddingBottom: "1rem",
+  border: "2px solid #444444",
+  borderRadius: 10,
+  [theme.breakpoints.up('sm')]: {
+    height: "100%"
   }
-})
+}));
 const Dashboard: React.FC = () => {
-  const classes = useStyles();
   return (
-    <Grid container justifyContent="space-around">
-      <Grid item xs={4} className={classes.linkWrapper}>
-        <Link to="/passing" className={classes.link}>Passing</Link>
+    <Grid container justifyContent="space-around" alignItems="stretch" spacing={4}>
+      <Grid item xs={10} sm={5} >
+        <StyledLink to="/passing" >
+          <Typography align="center" sx={{ color: "#000000" }} variant="h4">Passing Visualizations</Typography>
+        </StyledLink>
       </Grid>
-      <Grid item xs={4} className={classes.linkWrapper}>
-        <Link to="/leaders" className={classes.link}>Leaders</Link>
+      <Grid item xs={10} sm={5}>
+        <StyledLink to="/leaders">
+          <Typography align="center" sx={{ color: "#000000" }} variant="h4">Match Leaders</Typography>
+        </StyledLink>
       </Grid>
     </Grid>
   )

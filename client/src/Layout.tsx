@@ -27,10 +27,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Box sx={{ flexGrow: 1 }} >
         <AppBar position="static" className={classes.appBar}>
           <Toolbar sx={{
-            justifyContent: "flex-end"
+            justifyContent: "space-between"
           }}>
-            <Link to="/passing" className={clsx(classes.link, location.pathname === "/passing" && classes.activeLink)}>Passing</Link>
-            <Link to="/leaders" className={clsx(classes.link, location.pathname === "/leaders" && classes.activeLink)}>Leaders</Link>
+            <div>
+              <Link to="/" className={classes.link}>
+                <img id="logo" src="https://www.cdcastellon.com/wp-content/uploads/2018/09/logoHeader.png" />
+              </Link>
+            </div>
+            <div>
+              <Link to="/passing" className={clsx(classes.link, location.pathname === "/passing" && classes.activeLink)}>Passing</Link>
+              <Link to="/leaders" className={clsx(classes.link, location.pathname === "/leaders" && classes.activeLink)}>Leaders</Link>
+            </div>
           </Toolbar>
         </AppBar>
       </Box>

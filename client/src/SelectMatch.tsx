@@ -6,7 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { useStyles } from './App'
 import { SelectMatchProps } from "./types"
-const SelectMatch: React.FC<SelectMatchProps> = ({ matches, currentMatch }) => {
+const SelectMatch: React.FC<SelectMatchProps> = ({ matches, currentMatch, handleChange }) => {
   const classes = useStyles();
   return (
     <Grid item xs={12} container justifyContent="center">
@@ -18,7 +18,7 @@ const SelectMatch: React.FC<SelectMatchProps> = ({ matches, currentMatch }) => {
             value={currentMatch}
             label="Match"
             onChange={(e: any) => {
-              // handleChange(e)
+              handleChange(e)
             }}
           >
             {[...matches, { id: "0", away_team_name: "", home_team_name: "", human_readable_date: "" }].map(match => {

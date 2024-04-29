@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import PassingVisualization from './PassingVisualization';
 import Layout from './Layout';
 import Dashboard from './Dashboard';
+import Leaders from "./Leaders"
 import { makeStyles } from '@mui/styles'
 import {
   BrowserRouter as Router,
@@ -17,13 +18,9 @@ export const useStyles = makeStyles({
   },
 });
 const App: React.FC = () => {
-  const classes = useStyles();
   const [matches, setMatches] = useState<Match[]>([])
-  // const handleChange = (event: React.ChangeEvent<{ name?: string; value: string }>) => {
-  //   setCurrentMatch(event.target.value);
-  // }
   useEffect(() => {
-    fetch("/matches").then((res) => res.json()).then((data) => {
+    fetch("api/matches").then((res) => res.json()).then((data) => {
       setMatches(data)
     })
   }, [])
@@ -42,11 +39,13 @@ const App: React.FC = () => {
               <Route exact path="/passing">
                 <PassingVisualization matches={matches} />
               </Route>
+              <Route exact path="/leaders">
+                <Leaders matches={matches} />
+              </Route>
             </Switch>
           </Grid>
         </Grid>
       </Layout>
-
     </Router>
   );
 };
