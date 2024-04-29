@@ -7,13 +7,24 @@ export type Player = {
   totalPasses: number,
   averageValueAdded?: number
 }
+
+export type AllowablePasserKeys = "activePasser" | "activeReceiver"
+export type ChartDataType = {
+  datasets: Dataset[],
+
+}
+type Dataset = {
+  label: string,
+  data: Player[],
+  backgroundColor: string[]
+}
 export type AlignType = 'left' | 'center' | 'right' | 'justify' | 'inherit';
 export type PassComboObject = {
   count: number,
   player: string,
   recipient: string,
 }
-type GraphHeader = {
+export type GraphHeader = {
   name: string,
   label: string
 }
@@ -28,8 +39,8 @@ export type PassingVisualizationProps = {
 
 export type PlayerSelectionsProps = {
   arrayOfPlayers: Player[],
-  state: PassingVisualizationState
-
+  state: PassingVisualizationState,
+  handlePlayerSelectionChange: (event: React.ChangeEvent<{ name?: string; value: string }>, selectName: AllowablePasserKeys) => void
 }
 export type SelectMatchProps = {
   matches: Match[],
@@ -45,6 +56,7 @@ export type PassingVisualizationState = {
   arrayOfPlayers: Player[],
   filteredPlayers: Player[],
   passMap: any,
+  filteredPassMap: any,
   activePasser: string,
   activeReceiver: string
 }
@@ -62,4 +74,15 @@ export type Match = {
 
 export type LayoutProps = {
   children: React.ReactNode
+}
+
+export type PlayerSelectionObject = {
+  name: string,
+  label: string,
+  helperText: string
+}
+
+export type ExplanationsProps = {
+  lowAddedValueColor: number[],
+  highAddedValueColor: number[],
 }

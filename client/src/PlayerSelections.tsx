@@ -1,55 +1,45 @@
 import Grid from '@mui/material/Grid';
-import { PlayerSelectionsProps } from "./types"
+import { PlayerSelectionsProps, AllowablePasserKeys } from "./types"
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { PassingVisualizationState } from './types'
+import { PassingVisualizationState, PlayerSelectionObject } from './types'
 
-import { useStyles } from './App'
-
-const playerSelectionObjects = [
+const playerSelectionObjects: PlayerSelectionObject[] = [
   {
     name: "activePasser",
     label: "Passer",
-    helerText: "Choose a passer"
-
+    helperText: "Choose a passer"
   },
   {
     name: "activeReceiver",
     label: "Receiver",
-    helerText: "Choose a receiver"
+    helperText: "Choose a receiver"
   }
 ]
-const PlayerSelections: React.FC<PlayerSelectionsProps> = ({ arrayOfPlayers, state }) => {
-  const classes = useStyles()
+const PlayerSelections: React.FC<PlayerSelectionsProps> = ({ arrayOfPlayers, state, handlePlayerSelectionChange }) => {
   return (
-    <Grid item xs={12} sm={8} md={6} container justifyContent="space-around">
-      {playerSelectionObjects.map(playerSelectionObject => {
+    <Grid item xs={12} sm={10} md={8} container justifyContent="space-around">
+      {playerSelectionObjects.map((playerSelectionObject: PlayerSelectionObject) => {
         return (
           <Grid item xs={5} key={playerSelectionObject.name}>
-            <FormControl className={classes.formControl}>
+            <FormControl sx={{ width: "100%" }}>
               <InputLabel>{playerSelectionObject.label}</InputLabel>
               <Select
                 value={state[playerSelectionObject.name as keyof PassingVisualizationState]}
                 label={playerSelectionObject.label}
-                onChange={(e: any) => {
-                  // handleChange(e)
-                  console.log(typeof e.target.value)
-
-                }}
+                onChange={(e: any) => handlePlayerSelectionChange(e, playerSelectionObject.name as AllowablePasserKeys)}
               >
                 {[{ id: "0", name: "View all players" }, ...arrayOfPlayers].map(player => {
-                  let label = player.id === null ? `View all players` : `${player.name}`
-                  return <MenuItem key={label} value={player.id}>{label}</MenuItem>
+                  const label: string = player.id === null ? `View all players` : `${player.name}`
+                  const disabled: boolean = (player.id !== "0" && (player.id === state.activePasser || player.id === state.activeReceiver)) ? true : false
+                  return <MenuItem key={label} value={player.id} disabled={disabled}>{label}</MenuItem>
                 })}
               </Select>
-              <FormHelperText>{playerSelectionObject.helerText}</FormHelperText>
+              <FormHelperText>{playerSelectionObject.helperText}</FormHelperText>
             </FormControl>
-
-
-
           </Grid>
         )
       })}

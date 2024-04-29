@@ -1,4 +1,4 @@
-import { LeadersProps, Player, PassComboObject, GraphConfig, AlignType } from './types'
+import { LeadersProps, Player, PassComboObject, GraphConfig, AlignType, GraphHeader } from './types'
 import Grid from '@mui/material/Grid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -17,10 +17,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import FormLabel from '@mui/material/FormLabel';
 import { useState, useEffect } from 'react';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
 
 
 const Leaders: React.FC<LeadersProps> = ({ matches }) => {
@@ -38,16 +35,17 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
   };
 
   useEffect(() => {
+    //fetch data at beginning, every time match selection changes, or every time graph type changes
     setIsLoading(true)
     if (type === "mostCommonCombos") {
-      fetch(`/api/most-common-combos/${currentMatch}`).then((res) => res.json()).then((data) => {
+      fetch(`/api/most-common-combos/${currentMatch}`).then((res) => res.json()).then((data: { passCombos: PassComboObject[] }) => {
         setPassCombos(data.passCombos)
         setIsLoading(false)
       })
     }
 
     if (type === "bestPassers" || type === "bestReceivers") {
-      fetch(`/api/leaders/${currentMatch}?type=${type}`).then((res) => res.json()).then((data) => {
+      fetch(`/api/leaders/${currentMatch}?type=${type}`).then((res) => res.json()).then((data: { topPlayers: Player[] }) => {
         setPlayers(data.topPlayers)
         setIsLoading(false)
       })
@@ -77,7 +75,7 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
     }
   }
   return (
-    <Grid container alignItems="center" direction="column">
+    <Grid container alignItems="center" direction="column" sx={{ paddingTop: "32px !important" }}>
       <Grid item xs={12} container justifyContent="center">
         <Grid item xs={12} sm={6} md={4}>
           <SelectMatch currentMatch={currentMatch} matches={matches} handleChange={handleMatchChange} />
@@ -114,7 +112,7 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    {graphConfig.headers.map((header, index) => {
+                    {graphConfig.headers.map((header: GraphHeader, index: number) => {
                       const align: AlignType = index === 0 ? "inherit" : "right"
                       if (header.name === "averageValueAdded") {
                         return (
@@ -122,7 +120,7 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
                             <span style={{ marginRight: 10 }}>
                               Average Value Added
                             </span>
-                            <Tooltip title={`Average value is calculated as the average obv_added for all passes ${type === "bestPassers" ? "made" : "received"} multiplied by 100.`}>
+                            <Tooltip title={`Average value is calculated as the average obv_added for all passes ${type === "bestPassers" ? "made" : "received"}.`}>
                               <IconButton sx={{ padding: 0 }}>
                                 <InfoIcon />
                               </IconButton>
@@ -135,13 +133,13 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {graphConfig.data.map((dataObject, index) => (
+                  {graphConfig.data.map((dataObject: PassComboObject | Player, index: number) => (
                     <TableRow
                       key={index}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       {graphConfig.headers.map((header, index) => {
-                        const key = header.name
+                        const key: string = header.name
                         let value: any = dataObject[key as keyof typeof dataObject]
                         if (key === "averageValueAdded") {
                           value = formatValueAdded(value)
@@ -162,8 +160,6 @@ const Leaders: React.FC<LeadersProps> = ({ matches }) => {
             </TableContainer>
           </Grid>
         </Grid>
-
-
       }
     </Grid>
   )
@@ -173,5 +169,5 @@ export default Leaders
 
 function formatValueAdded(value: number | undefined): string {
   if (!value) return ""
-  return (value * 100).toFixed(2)
+  return (value).toFixed(4)
 }

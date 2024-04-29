@@ -5,18 +5,12 @@ import PassingVisualization from './PassingVisualization';
 import Layout from './Layout';
 import Dashboard from './Dashboard';
 import Leaders from "./Leaders"
-import { makeStyles } from '@mui/styles'
 import {
   BrowserRouter as Router,
   Switch,
   Route,
 } from "react-router-dom";
 import { Match } from './types';
-export const useStyles = makeStyles({
-  formControl: {
-    width: "100%"
-  },
-});
 const App: React.FC = () => {
   const [matches, setMatches] = useState<Match[]>([])
   useEffect(() => {
@@ -29,7 +23,7 @@ const App: React.FC = () => {
     <Router>
       <Layout>
         <Grid container sx={{
-          paddingTop: (theme) => theme.spacing(4),
+          paddingTop: (theme) => theme.spacing(3),
         }}>
           <Grid item xs={12}>
             <Switch>

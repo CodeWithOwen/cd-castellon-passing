@@ -15,22 +15,20 @@ const useStyles = makeStyles({
   activeLink: {
     fontWeight: 700
   },
-  appBar: {
-    backgroundColor: "#000000 !important"
-  }
 })
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const classes = useStyles();
   return (
     <div >
       <Box sx={{ flexGrow: 1 }} >
-        <AppBar position="static" className={classes.appBar}>
+        <AppBar position="static" sx={{ backgroundColor: "#000000" }}>
           <Toolbar sx={{
             justifyContent: "space-between"
           }}>
             <div>
-              <Link to="/" className={classes.link}>
+              <Link to="/" >
                 <img id="logo" src="https://www.cdcastellon.com/wp-content/uploads/2018/09/logoHeader.png" />
               </Link>
             </div>
@@ -44,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div>
         {children}
       </div>
-    </div>
+    </div >
   );
 }
 

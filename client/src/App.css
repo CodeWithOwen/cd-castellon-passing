@@ -43,3 +43,7 @@
   height: auto;
   width: auto;
 }
+
+.Mui-focused {
+  color: #000000 !important;
+}

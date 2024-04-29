@@ -19,7 +19,7 @@ const StyledLink = styled(Link)(({ theme }) => ({
 }));
 const Dashboard: React.FC = () => {
   return (
-    <Grid container justifyContent="space-around" alignItems="stretch" spacing={4}>
+    <Grid container justifyContent="space-around" alignItems="stretch" spacing={4} sx={{ paddingTop: "24px !important" }}>
       <Grid item xs={10} sm={5} >
         <StyledLink to="/passing" >
           <Typography align="center" sx={{ color: "#000000" }} variant="h4">Passing Visualizations</Typography>

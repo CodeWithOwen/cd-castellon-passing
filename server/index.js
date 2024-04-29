@@ -7,12 +7,14 @@ const PORT = process.env.PORT || 3001;
 app.use(express.static(path.join(__dirname, 'public')));
 
 const cdCastellonTeamId = 1787
+
 app.get('/api/matches', async (req, res) => {
   let data = await getData();
   data = JSON.parse(data);
   const uniqueMatchIds = getUniqueMatchIds(data.formation_players);
   let arrayOfMatches = []
   let index = 0
+  //assuming that the matches are in the same order as the matchIDs show up in the formation_players array
   for (let matchID in uniqueMatchIds) {
     arrayOfMatches.push({ id: matchID, ...data.matches[index] })
     index++
@@ -31,24 +33,29 @@ app.get('/api/passing-data/:matchID', async (req, res) => {
   let data = await getData();
   data = JSON.parse(data);
 
-  for (let key in data) {
-    console.log(key);
-    console.log(data[key].length)
-    console.log(data[key][0])
-    console.log("\n\n\n")
-  }
-
+  //if matchID is 0, we want passes from all matches
+  //we only want passes from the Castellon team
   let passesFromThisMatch = data.passes.filter(pass =>
     matchID === "0" || pass.match_id.toString() === matchID
   ).filter(pass => pass.team_id === cdCastellonTeamId);
-  passesFromThisMatch = passesFromThisMatch.filter(pass => pass.player_id && pass.pass_recipient_id && pass.location_x && pass.location_y);
 
+  //make sure that the passes have all the necessary fields
+  passesFromThisMatch = passesFromThisMatch.filter(pass => pass.player_id && pass.pass_recipient_id && pass.location_x && pass.location_y && pass.obv_added);
+
+  //get an object with player_id as key and an array of made passes as value
   const groupedByPlayer = groupByPlayer(passesFromThisMatch);
+
+  //get an array of player objects with totalPasses, averageValueAdded, and other fields
   let playersWithPassValue = handlePlayerObject(groupedByPlayer)
   playersWithPassValue.sort((a, b) => b.totalPasses - a.totalPasses);
-  console.log(playersWithPassValue.length)
+
+  //get "top 11" players
   playersWithPassValue = playersWithPassValue.slice(0, 11);
   const eligiblePlayerIds = new Set(playersWithPassValue.map(player => player.id));
+
+  //get a map of passes between eligible players
+  //keys are playerID-recipientID
+  //values are arrays of passes
   const passMap = passesFromThisMatch.reduce((acc, pass) => {
     const playerID = pass.player_id;
     const recipientID = pass.pass_recipient_id;
@@ -65,68 +72,6 @@ app.get('/api/passing-data/:matchID', async (req, res) => {
   }, {})
 
   res.send({ players: playersWithPassValue, passMap });
-
-  // console.log(groupedByPlayer)
-  // console.log(Object.keys(groupedByPlayer).length)
-
-
-  // return res.send({ foo: "bar" })
-
-
-  // let uniquePlayersCount = 0;
-  // const groupedByPlayer = {};
-  // const eligiblePlayerIds = new Set();
-
-  // passesFromThisMatch.forEach(pass => {
-  //   const playerId = pass.player_id;
-  //   if (!groupedByPlayer[playerId]) {
-  //     if (uniquePlayersCount >= 11) {
-  //       return;
-  //     }
-  //     groupedByPlayer[playerId] = [];
-  //     eligiblePlayerIds.add(playerId);
-  //     uniquePlayersCount++;
-  //   }
-  //   groupedByPlayer[playerId].push(pass);
-  // });
-
-  // let megaObject = {};
-
-  // // console.log(eligiblePlayerIds)
-  // passesFromThisMatch.forEach(pass => {
-  //   if (eligiblePlayerIds.has(pass.player_id) && eligiblePlayerIds.has(pass.pass_recipient_id)) {
-  //     const key = `${pass.player_id}-${pass.pass_recipient_id}`;
-  //     if (!megaObject[key]) {
-  //       megaObject[key] = {};
-  //       megaObject[key].passes = [];
-  //     }
-  //     megaObject[key].passes.push(pass);
-  //   }
-  // });
-  // const numberOfCombinations = Object.keys(megaObject).length;
-  // // console.log(megaObject)
-  // const playerAverages = {};
-
-  // for (const playerId in groupedByPlayer) {
-  //   const passes = groupedByPlayer[playerId];
-  //   let totalX = 0;
-  //   let totalY = 0;
-  //   let count = 0
-  //   const playerName = passes[0].player_name;
-
-  //   passes.forEach(pass => {
-  //     count++
-  //     totalX += pass.location_x;
-  //     totalY += pass.location_y;
-  //   });
-
-  //   const avgX = totalX / passes.length;
-  //   const avgY = totalY / passes.length;
-
-  //   playerAverages[playerId] = { avg_x: avgX, avg_y: avgY, player_name: playerName, count: count };
-  // }
-
-  // res.send({ players: playerAverages, passMap: megaObject });
 });
 
 app.get('/api/leaders/:matchID', async (req, res) => {
@@ -136,11 +81,16 @@ app.get('/api/leaders/:matchID', async (req, res) => {
   const type = req.query.type
   let data = await getData();
   data = JSON.parse(data);
+
   let passesFromThisMatch = data.passes.filter(pass =>
     matchID === "0" || pass.match_id.toString() === matchID
-  );
-  const playerObject = groupByPlayer(passesFromThisMatch, type);
-  let playersWithPassValue = handlePlayerObject(playerObject, type)
+  ).filter(pass => pass.team_id === cdCastellonTeamId).filter(pass => pass.obv_added);
+
+  //get an object with player_id as key and an array of received passes as value
+  const groupedByPlayer = groupByPlayer(passesFromThisMatch, type);
+
+  //get an array of player objects with totalPasses, averageValueAdded, and other fields
+  let playersWithPassValue = handlePlayerObject(groupedByPlayer, type)
   playersWithPassValue.sort((a, b) => b.averageValueAdded - a.averageValueAdded);
   res.send({ topPlayers: playersWithPassValue.slice(0, 5) })
 })
@@ -149,9 +99,12 @@ app.get('/api/most-common-combos/:matchID', async (req, res) => {
   const matchID = req.params.matchID;
   let data = await getData();
   data = JSON.parse(data);
+
   const passesFromThisMatch = data.passes.filter(pass =>
     matchID === "0" || pass.match_id.toString() === matchID
-  );
+  ).filter(pass => pass.team_id === cdCastellonTeamId);
+
+  //pust as passes between passer-reciever combos and stores player names
   const result = passesFromThisMatch.reduce((acc, pass) => {
     const playerID = pass.player_id;
     const recipientID = pass.pass_recipient_id;
@@ -176,9 +129,11 @@ app.get('/api/most-common-combos/:matchID', async (req, res) => {
     }
     return acc;
   }, { playerInfo: {}, passInfo: {} })
-  // console.log(result.passInfo)
+
   let passKeys = Object.keys(result.passInfo);
+  //sort descending
   passKeys.sort((a, b) => result.passInfo[b] - result.passInfo[a]);
+
   let mostCommonCombos = passKeys.map(key => {
     const [playerID, recipientID] = key.split('-');
     return {
