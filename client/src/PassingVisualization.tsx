@@ -111,7 +111,9 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
   useEffect(() => {
     setState({
       ...state,
-      isLoading: true
+      isLoading: true,
+      activePasser: "0",
+      activeReceiver: "0"
     })
     fetch(`api/passing-data/${currentMatch}`).then((res) => res.json()).then((data: { players: Player[], passMap: any }) => {
       let arrayOfPlayers: Player[] = data.players.map((player: Player) => {
