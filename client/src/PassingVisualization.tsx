@@ -280,14 +280,14 @@ const PassingVisualization: React.FC<PassingVisualizationProps> = ({ matches }) 
 
     Chart.register(drawFieldAndPassesPlugin);
     //get range of valueAdded so we can color bubbles accordingly
-    const minAverageValueAdded: number = Math.min(...state.filteredPlayers.map(player => player.averageValueAdded || 0))
-    const maxAverageValueAdded: number = Math.max(...state.filteredPlayers.map(player => player.averageValueAdded || 0))
+    const minAverageValueAdded: number = Math.min(...state.arrayOfPlayers.map(player => player.averageValueAdded || 0))
+    const maxAverageValueAdded: number = Math.max(...state.arrayOfPlayers.map(player => player.averageValueAdded || 0))
 
     const chartData: ChartDataType = {
       datasets: [{
         label: 'Player Locations',
         data: state.filteredPlayers,
-        backgroundColor: state.filteredPlayers.map(player => {
+        backgroundColor: state.filteredPlayers.map((player: Player) => {
           return interpolateColor(player.averageValueAdded as number, minAverageValueAdded, maxAverageValueAdded, lowAddedValueColor, highAddedValueColor)
         }
         )
