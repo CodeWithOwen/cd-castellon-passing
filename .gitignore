@@ -3,8 +3,6 @@ node_modules/
 .env
 
 /client/build/
-/client/public/
-# /server/data.json
 *.log
 logs
 
